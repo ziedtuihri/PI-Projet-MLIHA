@@ -1,17 +1,22 @@
 import express from 'express';
 import mongoose from 'mongoose';
-// import clientRoutes from './routes/client.js';
-// import categorieclientRoutes from './routes/categorieclient.js';
+import morgan from 'morgan'; // Importer morgan
+import cors from 'cors'; // Importer cors
+
+
+import client from './routes/client.js';
+import reclamation from './routes/reclamation.js';
+import categorieReclamation from './routes/categorieReclamation.js';
 
 const app = express();
 const port = process.env.PORT || 9090;
-const databaseName = 'E-MLIHA';
+const databaseName = 'Workshop1';
 
 mongoose.set('debug', true);
 mongoose.Promise = global.Promise;
 
 mongoose
-  .connect(`mongodb://localhost:27017/${databaseName}`, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(`mongodb://127.0.0.1:27017/${databaseName}`)
   .then(() => {
     console.log(`Connected to ${databaseName}`);
   })
@@ -19,11 +24,24 @@ mongoose
     console.log(err);
   });
 
-app.use(express.json());
+app.use(cors()); // Utiliser CORS
+app.use(morgan('dev')); // Utiliser morgan
+app.use(express.json()); // Pour analyser application/json
+app.use(express.urlencoded({ extended: true })); // Pour analyser application/x-www-form-urlencoded
+app.use('/img', express.static('public/images')); // Servir les fichiers sous le dossier public/images
 
-// app.use('/client', clientRoutes);
-// app.use('/categorieclient', categorieclientRoutes);
+// A chaque requête, exécutez ce qui suit
+app.use((req, res, next) => {
+  console.log("Middleware just ran !");
+  next();
+});
+
+app.use('/clients', client);
+app.use('/reclamations', reclamation);
+app.use('/categorieReclamations', categorieReclamation);
+
+
 
 app.listen(port, () => {
-  console.log(`Server running at http://127.0.0.1:${port}/`);
+  console.log(`Server running at http://localhost:${port}/`);
 });
