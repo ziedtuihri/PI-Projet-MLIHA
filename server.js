@@ -1,28 +1,25 @@
-import express from 'express';
-import mongoose from 'mongoose';
-// import clientRoutes from './routes/client.js';
-// import categorieclientRoutes from './routes/categorieclient.js';
-
+import express from "express";
+import mongoose from "mongoose";
+import indexRoutes from "./routes/routes.js";
+import { notFoundError, errorHandler } from "./middlewares/error-handler.js";
 const app = express();
 const port = process.env.PORT || 9090;
-const databaseName = 'E-MLIHA';
+const databaseName = "E-MLIHA";
 
-mongoose.set('debug', true);
+mongoose.set("debug", true);
 mongoose.Promise = global.Promise;
 
 mongoose
-  .connect(`mongodb://localhost:27017/${databaseName}`, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log(`Connected to ${databaseName}`);
-  })
-  .catch(err => {
-    console.log(err);
+  .connect(`mongodb://127.0.0.1:27017/${databaseName}`)
+  .then(() => console.log(`Connected to ${databaseName}`))
+  .catch((e) => {
+    console.log(e);
   });
 
 app.use(express.json());
-
-// app.use('/client', clientRoutes);
-// app.use('/categorieclient', categorieclientRoutes);
+app.use(indexRoutes);
+app.use(notFoundError);
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server running at http://127.0.0.1:${port}/`);
