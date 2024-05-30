@@ -7,6 +7,7 @@ export function getAll(req, res) {
     .find({})
     
     .then(docs => {
+        console.log("ibrahim")
         res.status(200).json(docs);
     })
     .catch(err => {
