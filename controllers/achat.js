@@ -46,6 +46,14 @@ export async function getAll(req, res) {
     res.status(500).json({ error: e.message });
   }
 }
+export async function getOnce(req, res) {
+  try {
+    const achat = await Achat.findById({ _id: req.params.idAchat });
+    res.status(200).json(achat);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+}
 
 export async function updateOne(req, res) {
   try {
@@ -99,9 +107,50 @@ export async function updateOne(req, res) {
         );
         res.status(200).json({ mesg: "update successfully", newAchat });
       } else {
-        newAchat = await Achat.findOne({ _id: req.params.idAchat });
+        newAchat = await Achat.findOne({ "commande._id": req.params.idAchat });
         res.status(200).json({ mesg: "la quantite est la même", newAchat });
       }
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+}
+
+export async function deleteOne(req, res) {
+  try {
+    let newAchat;
+    const achat = await Achat.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(req.params.idAchat) } },
+      { $unwind: "$commande" },
+      {
+        $match: {
+          "commande._id": new mongoose.Types.ObjectId(req.params.idProduit),
+        },
+      },
+    ]);
+
+    if (achat.length > 0) {
+      const result = achat[0];
+      const newSomme = result.somme - result.commande.total;
+      newAchat = await Achat.findOneAndUpdate(
+        {
+          "commande._id": req.params.idProduit,
+        },
+        {
+          $set: {
+            somme: newSomme,
+          },
+
+          $pull: {
+            commande: {
+              _id: req.params.idProduit,
+            },
+          },
+        },
+        { new: true }
+      );
+
+      res.status(200).json({ message: "delete successful", newAchat });
     }
   } catch (e) {
     res.status(500).json({ error: e.message });
