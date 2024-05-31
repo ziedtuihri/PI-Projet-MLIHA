@@ -1,4 +1,7 @@
 import express from 'express';
+
+import multer from "../middlewares/multer-config.js";
+
 import {  addOnce, getAll, getOnce, updateOne, deleteOne, updateField }
 from '../controllers/reclamation.js';
   
@@ -6,16 +9,18 @@ const router = express.Router();
 
 router
   .route('/')
-  .post(addOnce)
+  .post(
+    multer("image", 5 * 1024 * 1024),  
+    addOnce)
   .get(getAll);
 
 router
   .route('/:idClient')
+  .put(updateOne)
   .get(getOnce);
 
   router
   .route('/:id')
-  .put(updateOne)
   .delete(deleteOne)
   .patch(updateField);
   

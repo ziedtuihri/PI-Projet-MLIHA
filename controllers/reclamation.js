@@ -12,17 +12,33 @@ export function getAll(req, res) {
     });
 }
 
+// add Once with image field:
 export function addOnce(req, res) {
-    const reclamation = new Reclamation(req.body);
-    reclamation.save()
-    .then(newReclamation => {
-        res.status(201).json({
-            nom: newReclamation.description
-        });
+
+    Reclamation.create({
+      idClient: req.body.idClient,
+      idCategorieReclamation: req.body.idCategorieReclamation,
+      title: req.body.title,
+      description: req.body.description,
+      dateReclamation: req.body.dateReclamation,
+      priorite: req.body.priorite,
+      statut_rec: req.body.statut_rec,
+      image: `${req.protocol}://${req.get("host")}/img/${req.file.filename}`,
     })
-    .catch(err => {
-        res.status(500).json(err);
-    });
+      .then((newReclamation) => {
+        res.status(200).json({
+          title: req.body.title,
+          description: newReclamation.description,
+          dateReclamation: newReclamation.dateReclamation,
+          priorite: newReclamation.priorite,
+          statut_rec: newReclamation.statut_rec,
+          image: newReclamation.image,
+        });
+      })
+      .catch((err) => {
+        res.status(500).json({ error: err });
+      });
+  
 }
 
 
@@ -76,6 +92,8 @@ export async function updateOne(req, res) {
       res.status(500).json({ message: e.message });
     }
   }
+
+  
 
   
   

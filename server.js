@@ -10,7 +10,7 @@ import categorieReclamation from './routes/categorieReclamation.js';
 
 const app = express();
 const port = process.env.PORT || 9090;
-const databaseName = 'Workshop1';
+const databaseName = 'WorkshopPI';
 
 mongoose.set('debug', true);
 mongoose.Promise = global.Promise;

@@ -7,13 +7,21 @@ const reclamationSchema = new Schema({
         required: true,
         ref: 'Client'
     },
+    idCategorieReclamation: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'CategorieReclamation'
+    },
+    title: {
+        type: String,
+        required: [true, 'description is required'],
+    },
     description: {
         type: String,
         required: [true, 'description is required'],
     },
-    type: {
+    priorite: {
         type: String,
-        required: [true, 'type is required'],
     },
     dateReclamation: {
         type: Date,
@@ -22,6 +30,18 @@ const reclamationSchema = new Schema({
     statut_rec: {
         type: String,
         required: [true, 'statut reclamation is required'],
+    },
+    satisfaction: {
+        type: String
+    },
+    notes: {
+        type: String
+    },
+    notification: {
+        type: String
+    },
+    image: {
+        type: String
     }
 },
     {
