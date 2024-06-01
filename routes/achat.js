@@ -11,6 +11,6 @@ const router = express.Router();
 router.route("/").get(getAll).post(addOnce);
 router.route("/id/:idAchat").get(getOnce);
 router.route("/:idAchat/:idProduit").put(updateOne);
-router.route("/delete/:idAchat/:idProduit").put(deleteOne);
+router.route("/delete/:idAchat/:idProduit").put(deleteIn);
 
 export default router;

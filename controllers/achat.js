@@ -116,7 +116,7 @@ export async function updateOne(req, res) {
   }
 }
 
-export async function deleteOne(req, res) {
+export async function deleteIn(req, res) {
   try {
     let newAchat;
     const achat = await Achat.aggregate([
@@ -150,8 +150,19 @@ export async function deleteOne(req, res) {
         { new: true }
       );
 
-      res.status(200).json({ message: "delete successful", newAchat });
+      res
+        .status(200)
+        .json({ message: "delete ligne commande successfully", newAchat });
     }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+}
+
+export async function deleteOne(req, res) {
+  try {
+    const achat = await Achat.findByIdAndDelete({ _id: req.params.idAchat });
+    res.status(200).json({ message: "delete Achat successfully" });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
