@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 router.route("/").get(getAll).post(addOnce);
-router.route("/id/:idAchat").get(getOnce);
+router.route("/id/:idAchat").get(getOnce).delete(deleteOne);
 router.route("/:idAchat/:idProduit").put(updateOne);
 router.route("/delete/:idAchat/:idProduit").put(deleteIn);
 
