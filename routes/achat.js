@@ -5,6 +5,7 @@ import {
   updateOne,
   deleteOne,
   getOnce,
+  deleteIn,
 } from "../controllers/achat.js";
 const router = express.Router();
 

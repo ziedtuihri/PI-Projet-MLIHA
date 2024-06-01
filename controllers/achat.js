@@ -15,7 +15,7 @@ export async function addOnce(req, res) {
           quantite: quantite[i],
           prix: prix[i],
           total: prix[i] * quantite[i],
-          dateAchat: new Date(dateAchat[i]),
+          //dateAchat: new Date(dateAchat[i]),
         });
       } else {
         commande[index].quantite += quantite[i];
