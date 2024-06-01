@@ -7,7 +7,7 @@ const achatScehma = new Schema(
       type: [
         {
           idClient: Number,
-          idProduit: Number,
+          idProduit: Schema.Types.ObjectId,
           quantite: Number,
           prix: Number,
           total: Number,

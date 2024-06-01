@@ -1,38 +1,69 @@
 import mongoose from "mongoose";
 import Achat from "../models/achat.js";
+import Produit from "../models/produit.js";
 
 export async function addOnce(req, res) {
   try {
     const { idClient, idProduit, quantite, prix, dateAchat } = req.body;
     const commande = [];
+    const stock = [];
+    let message = "";
 
     for (let i = 0; i < idProduit.length; i++) {
       const index = commande.findIndex((x) => x.idProduit == idProduit[i]);
-      if (index == -1) {
-        commande.push({
-          idClient: idClient[i],
-          idProduit: idProduit[i],
-          quantite: quantite[i],
-          prix: prix[i],
-          total: prix[i] * quantite[i],
-          //dateAchat: new Date(dateAchat[i]),
-        });
+      const produit = await Produit.findById({ _id: idProduit[i] });
+      if (!produit) {
+        console.log("produit not found");
       } else {
-        commande[index].quantite += quantite[i];
-        commande[index].total = commande[index].quantite * commande[index].prix;
+        if (produit.quantite < quantite[i]) {
+          message = `Probléme stoke : le produit n°${produit.id} n'est disponoble que en ${produit.quantite} quantité`;
+
+          break;
+        } else if (index == -1 && produit.quantite >= quantite[i]) {
+          commande.push({
+            idClient: idClient[i],
+            idProduit: idProduit[i],
+            quantite: quantite[i],
+            prix: produit.prix,
+            total: produit.prix * quantite[i],
+          });
+          stock.push({
+            idProduit: produit.id,
+            solde: produit.quantite - quantite[i],
+          });
+        } else if (stock[index].solde < quantite[i]) {
+          message = `probléme stoke : il reste que ${stock[index].solde}  unité du produit N°${stock[index].idProduit}`;
+
+          break;
+        } else if (index != -1 && stock[index].solde >= quantite[i]) {
+          commande[index].quantite += quantite[i];
+          commande[index].total =
+            commande[index].quantite * commande[index].prix;
+          stock[index].solde -= quantite[i];
+        }
       }
     }
 
-    const total = commande.reduce(
-      (accumulator, currentValue) => accumulator + currentValue.total,
-      0
-    );
+    if (message) {
+      return res.status(400).json({ message });
+    } else {
+      const total = commande.reduce(
+        (accumulator, currentValue) => accumulator + currentValue.total,
+        0
+      );
+      const achat = await Achat.create({
+        commande: commande,
+        somme: total,
+      });
+      for (let i = 0; i < stock.length; i++) {
+        const updateProduit = await Produit.findByIdAndUpdate(
+          { _id: stock[i].idProduit },
+          { quantite: stock[i].solde }
+        );
+      }
 
-    const achat = await Achat.create({
-      commande: commande,
-      somme: total,
-    });
-    res.status(200).json({ message: "purchase add successfully", achat });
+      res.status(200).json({ message: "purchase add successfully", achat });
+    }
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
