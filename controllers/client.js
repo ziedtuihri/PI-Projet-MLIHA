@@ -6,6 +6,7 @@ import { sendPersonalizedSms } from '../utils/sms.js';
 import Client from '../models/client.js'; // Assurez-vous d'importer correctement votre modèle Client
 
 
+
 export async function sendPersonalizedMessages(req, res) {
     try {
         const today = new Date();
@@ -16,11 +17,11 @@ export async function sendPersonalizedMessages(req, res) {
             const isBirthday = birthday.getDate() === today.getDate() && birthday.getMonth() === today.getMonth();
 
             if (isBirthday) {
-                const message = `Bon anniversaire, ${client.prenom} ${client.nom}! Vous avez gagné 100 points de fidélité, ajoutés à votre compte de points de fidélité.`;
+                const message = `Bonjour, ${client.prenom} ${client.nom}! célébrez l'anniversaire de votre inscription sur la plateforme Mliha et gagnez 100 points de fidélité ajoutés à votre compte !`;
                 sendPersonalizedSms(client.telPortable, message);
 
                 // Ajouter 100 points de fidélité
-                client.pointFidelite = (client.pointFidelite || 0) + 100;
+                client.pointFidelite = client.pointFidelite   + 100;
                 await client.save(); // Enregistrer les modifications
             }
             // Ajouter d'autres messages personnalisés pour d'autres dates importantes si nécessaire
@@ -146,31 +147,37 @@ export async function calculateAnciennete(req, res) {
         const ancienneteMessage = `${years} ans, ${months} mois, ${days} jours, ${hours} heures, ${minutes} minutes, ${seconds} secondes`;
 
         res.status(200).json({ 
-            years, 
-            months, 
-            days, 
-            hours, 
-            minutes, 
-            seconds,
+            // years, 
+            // months, 
+            // days, 
+            // hours, 
+            // minutes, 
+            // seconds,
             anciennete: ancienneteMessage 
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 }
-
 // Fonction pour rechercher des clients
 export async function searchClients(req, res) {
     try {
         const searchTerm = req.query.q;
+        const regex = new RegExp(searchTerm, 'i'); // Crée une seule instance de RegExp
+
         const clients = await Client.find({
             $or: [
-                { nom: new RegExp(searchTerm, 'i') },
-                { prenom: new RegExp(searchTerm, 'i') },
-                { email: new RegExp(searchTerm, 'i') },
-                { region: new RegExp(searchTerm, 'i') }
+                { nom: regex },
+                { prenom: regex },
+                { email: regex },
+                { region: regex },
+                { adressePostal: regex },
+                { telPortable: regex },
+                { statutCompte: regex }
+                
             ]
         });
+
         res.status(200).json(clients);
     } catch (err) {
         res.status(500).json({ error: err.message });

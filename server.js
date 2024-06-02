@@ -5,6 +5,7 @@ import categorieclientRoutes from './routes/categorieclient.js';
 import cron from 'node-cron';
 import { sendPersonalizedMessages } from './controllers/client.js';
 
+
 const app = express();
 const port = process.env.PORT || 9090;
 const databaseName = 'E-MLIHA';
@@ -25,6 +26,9 @@ app.use(express.json());
 
 app.use('/client', clientRoutes);
 app.use('/categorieclient', categorieclientRoutes);
+
+
+app.use('/api', clientRoutes);  // Utilisez '/api' comme préfixe pour toutes les routes
 
 app.listen(port, () => {
   console.log(`Server running at http://127.0.0.1:${port}/`);
