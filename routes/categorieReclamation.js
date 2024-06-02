@@ -9,7 +9,7 @@ router
   .get(getAll);
 
 router
-  .route('/:idReclamation')
+  .route('/:id')
   .get(getOnce);
 
 router

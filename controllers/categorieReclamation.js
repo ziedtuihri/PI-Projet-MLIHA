@@ -28,7 +28,7 @@ export function addOnce(req, res) {
 export async function getOnce(req, res) {
 
     try {
-        const categorieReclamation = await CategorieReclamation.findOne({"idReclamation": req.params.idReclamation})
+        const categorieReclamation = await CategorieReclamation.findOne({"_id": req.params.id})
           .exec();
         res.status(200).json(categorieReclamation);
       } catch (e) {

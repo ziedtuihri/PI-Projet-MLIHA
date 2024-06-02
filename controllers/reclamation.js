@@ -1,16 +1,72 @@
 import Reclamation from '../models/reclamation.js';
 
 export function getAll(req, res) {
-    Reclamation.find({})
-    .select("_id idClient description")
-    .exec()
-    .then(descriptions => {
-        res.status(200).json(descriptions);
-    })
-    .catch(err => {
-        res.status(500).json(err);
-    });
+  Reclamation.aggregate([
+      {
+          $addFields: {
+              statut_rec_order: {
+                  $cond: [
+                      { $eq: ["$statut_rec", "new"] },
+                      1,
+                      {
+                          $cond: [
+                              { $eq: ["$statut_rec", "on hold"] },
+                              2,
+                              3
+                          ]
+                      }
+                  ]
+              },
+              priorite_order: {
+                  $cond: [
+                      { $eq: ["$priorite", "high"] },
+                      1,
+                      {
+                          $cond: [
+                              { $eq: ["$priorite", "medium"] },
+                              2,
+                              3
+                          ]
+                      }
+                  ]
+              }
+          }
+      },
+      {
+          $sort: {
+              statut_rec_order: 1,
+              dateReclamation: -1,
+              priorite_order: 1
+          }
+      },
+      {
+        $project: {
+          _id: 1,
+          idClient: 1,
+          idCategorieReclamation: 1,
+          title: 1,
+          description: 1,
+          priorite: 1,
+          dateReclamation: 1,
+          statut_rec: 1,
+          satisfaction: 1,
+          notes: 1,
+          notification: 1,
+          image: 1
+      }
+      }
+  ])
+  .exec()
+  .then(reclamations => {
+      res.status(200).json(reclamations);
+  })
+  .catch(err => {
+      res.status(500).json(err);
+  });
+  
 }
+
+
 
 // add Once with image field:
 export function addOnce(req, res) {
@@ -56,7 +112,7 @@ export async function getOnce(req, res) {
 export async function updateOne(req, res) {
     try {
       const reclamation = await Reclamation.findByIdAndUpdate(
-        { _id: req.params.id },
+        { id: req.params.id },
         req.body
       );
       res.status(200).json({ message: "updated successfully", reclamation });
