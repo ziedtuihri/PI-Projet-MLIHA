@@ -10,6 +10,7 @@ const userSchema = new Schema(
         matriculeFiscal: {type :String},
         email: { type: String, required :true },
         motPasse: { type: String         },
+        motPassH:{ type: String         },
         address: {  type: String,  },
         mobile:{   type:Number,     },
         role:{type: String, },      
