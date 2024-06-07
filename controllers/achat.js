@@ -89,12 +89,16 @@ export async function getOnce(req, res) {
 export async function updateOne(req, res) {
   try {
     let newAchat;
+    let newProduit;
+    const produit = await Produit.findById({ _id: req.params.idProduit });
     const achat = await Achat.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(req.params.idAchat) } },
       { $unwind: "$commande" },
       {
         $match: {
-          "commande._id": new mongoose.Types.ObjectId(req.params.idProduit),
+          "commande.idProduit": new mongoose.Types.ObjectId(
+            req.params.idProduit
+          ),
         },
       },
     ]);
@@ -103,11 +107,39 @@ export async function updateOne(req, res) {
 
       if (req.body.quantite > result.commande.quantite) {
         const newQuantite = req.body.quantite - result.commande.quantite;
+        if (newQuantite > produit.quantite) {
+          res
+            .status(400)
+            .json({ message: "quantité n'est pas disponible en stock" });
+        } else {
+          const difference = newQuantite * result.commande.prix;
+          const newSomme = difference + result.somme;
+          newAchat = await Achat.findOneAndUpdate(
+            {
+              "commande.idProduit": req.params.idProduit,
+            },
+            {
+              $set: {
+                "commande.$.quantite": req.body.quantite,
+                "commande.$.total": req.body.quantite * result.commande.prix,
+                somme: newSomme,
+              },
+            },
+            { new: true }
+          );
+          newProduit = await Produit.findByIdAndUpdate(
+            { _id: req.params.idProduit },
+            { quantite: produit.quantite - newQuantite }
+          );
+          res.status(200).json({ mesg: "update successfully", newAchat });
+        }
+      } else if (req.body.quantite < result.commande.quantite) {
+        const newQuantite = result.commande.quantite - req.body.quantite;
         const difference = newQuantite * result.commande.prix;
-        const newSomme = difference + result.somme;
+        const newSomme = result.somme - difference;
         newAchat = await Achat.findOneAndUpdate(
           {
-            "commande._id": req.params.idProduit,
+            "commande.idProduit": req.params.idProduit,
           },
           {
             $set: {
@@ -118,23 +150,9 @@ export async function updateOne(req, res) {
           },
           { new: true }
         );
-        res.status(200).json({ mesg: "update successfully", newAchat });
-      } else if (req.body.quantite < result.commande.quantite) {
-        const newQuantite = result.commande.quantite - req.body.quantite;
-        const difference = newQuantite * result.commande.prix;
-        const newSomme = result.somme - difference;
-        newAchat = await Achat.findOneAndUpdate(
-          {
-            "commande._id": req.params.idProduit,
-          },
-          {
-            $set: {
-              "commande.$.quantite": req.body.quantite,
-              "commande.$.total": req.body.quantite * result.commande.prix,
-              somme: newSomme,
-            },
-          },
-          { new: true }
+        newProduit = await Produit.findByIdAndUpdate(
+          { _id: req.params.idProduit },
+          { quantite: produit.quantite + newQuantite }
         );
         res.status(200).json({ mesg: "update successfully", newAchat });
       } else {
@@ -150,12 +168,15 @@ export async function updateOne(req, res) {
 export async function deleteIn(req, res) {
   try {
     let newAchat;
+    const produit = await Produit.findById({ _id: req.params.idProduit });
     const achat = await Achat.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(req.params.idAchat) } },
       { $unwind: "$commande" },
       {
         $match: {
-          "commande._id": new mongoose.Types.ObjectId(req.params.idProduit),
+          "commande.idProduit": new mongoose.Types.ObjectId(
+            req.params.idProduit
+          ),
         },
       },
     ]);
@@ -165,7 +186,7 @@ export async function deleteIn(req, res) {
       const newSomme = result.somme - result.commande.total;
       newAchat = await Achat.findOneAndUpdate(
         {
-          "commande._id": req.params.idProduit,
+          "commande.idProduit": req.params.idProduit,
         },
         {
           $set: {
@@ -174,14 +195,16 @@ export async function deleteIn(req, res) {
 
           $pull: {
             commande: {
-              _id: req.params.idProduit,
+              idProduit: req.params.idProduit,
             },
           },
         },
         { new: true }
       );
-
-      res
+      const newProduit = await Produit.findByIdAndUpdate(
+        { _id: req.params.idProduit },
+        { quantite: produit.quantite + result.commande.quantite }
+      )
         .status(200)
         .json({ message: "delete ligne commande successfully", newAchat });
     }
@@ -192,6 +215,15 @@ export async function deleteIn(req, res) {
 
 export async function deleteOne(req, res) {
   try {
+    const refAchat = await Achat.findById({ _id: req.params.idAchat });
+
+    refAchat.commande.map(async (c) => {
+      const produit = Produit.findById({ _id: c.idProduit });
+      await Produit.findByIdAndUpdate(
+        { _id: c.idProduit },
+        { quantite: produit.quantite + c.quantite }
+      );
+    });
     const achat = await Achat.findByIdAndDelete({ _id: req.params.idAchat });
     res.status(200).json({ message: "delete Achat successfully" });
   } catch (e) {
