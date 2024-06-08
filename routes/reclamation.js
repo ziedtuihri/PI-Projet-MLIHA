@@ -1,6 +1,6 @@
 import express from 'express';
 
-import multer from "../middlewares/multer-config.js";
+import multer from "../middlewares/multer-config-local.js";
 
 import {  addOnce, getAll, getOnce, updateOne, deleteOne, updateField }
 from '../controllers/reclamation.js';
