@@ -33,8 +33,7 @@ mongoose
     console.log(err);
   });
 
-app.use(notFoundError);
-app.use(errorHandler);
+
 
 
 app.use(cors()); // Utiliser CORS
@@ -59,6 +58,10 @@ app.use('/categorieclient', categorieclientRoutes);
 
 
 app.use('/api', clientRoutes);  
+
+
+app.use(notFoundError);
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);
