@@ -5,7 +5,14 @@ import cors from 'cors'; // Importer cors
 
 import reclamation from './routes/reclamation.js';
 import categorieReclamation from './routes/categorieReclamation.js';
+
 import indexRoutes from "./routes/routes.js";
+
+import clientRoutes from './routes/client.js';
+import categorieclientRoutes from './routes/categorieclient.js';
+import cron from 'node-cron';
+import { sendPersonalizedMessages } from './controllers/client.js';
+
 import { notFoundError, errorHandler } from "./middlewares/error-handler.js";
 
 const app = express();
@@ -26,7 +33,6 @@ mongoose
     console.log(err);
   });
 
-app.use(indexRoutes);
 app.use(notFoundError);
 app.use(errorHandler);
 
@@ -43,11 +49,22 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(indexRoutes);
+
 app.use('/reclamations', reclamation);
 app.use('/categorieReclamations', categorieReclamation);
 
+app.use('/client', clientRoutes);
+app.use('/categorieclient', categorieclientRoutes);
 
+
+app.use('/api', clientRoutes);  
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);
+});
+
+// Schedule the sendPersonalizedMessages function to run daily at midnight
+cron.schedule('0 0 * * *', () => {
+  sendPersonalizedMessages();
 });
