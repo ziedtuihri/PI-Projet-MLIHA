@@ -10,6 +10,9 @@ import indexRoutes from "./routes/routes.js";
 
 import clientRoutes from './routes/client.js';
 import categorieclientRoutes from './routes/categorieclient.js';
+
+import userRoutes from './routes/userRoutes.js';
+
 import cron from 'node-cron';
 import { sendPersonalizedMessages } from './controllers/client.js';
 
@@ -58,6 +61,8 @@ app.use('/categorieclient', categorieclientRoutes);
 
 
 app.use('/api', clientRoutes);  
+
+app.use("/User", userRoutes);
 
 
 app.use(notFoundError);
