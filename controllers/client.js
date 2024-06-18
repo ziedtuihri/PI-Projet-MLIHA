@@ -91,6 +91,17 @@ export async function patchOnce(req, res) {
     }
 }
 
+export async function getMany(req, res) {
+    try {
+        const client = await Client.find();
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        res.status(200).json(client);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+
 // Fonction pour filtrer les clients par région
 export async function filterByRegion(req, res) {
     try {
